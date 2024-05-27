@@ -1,42 +1,38 @@
 package com.github.valentina810;
 
-import com.github.valentina810.dto.pet.Category;
+import com.github.valentina810.data.petcontroller.PetControllerApiRequest;
+import com.github.valentina810.data.petcontroller.PetControllerExpectedData;
 import com.github.valentina810.dto.pet.Pet;
-import com.github.valentina810.dto.pet.Tag;
+import io.qameta.allure.Feature;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import retrofit2.Call;
 import retrofit2.Response;
-
-import java.util.List;
 
 import static com.github.valentina810.controller.PetControllerRetrofit.PET_CONTROLLER_RETROFIT;
 import static com.github.valentina810.utils.ResponseExecutor.execute;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.github.valentina810.utils.allure.AllureAssert.assertAll;
+import static com.github.valentina810.utils.allure.AllureAssert.assertEquals;
+import static com.github.valentina810.utils.allure.AssertsMessages.CHECK_RESPONSE_BODY;
+import static com.github.valentina810.utils.allure.AssertsMessages.CHECK_RESPONSE_CODE;
 
 public class PetControllerTest {
 
-    @Test
-    @DisplayName("Проверка создания пользователя")
-    public void addPetTest() {
-        Pet pet = Pet.builder()
-                .id(20)
-                .category(Category.builder()
-                        .id(1)
-                        .name("Кошки").build())
-                .name("Василий")
-                .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                .tags(List.of(Tag.builder()
-                        .id(1)
-                        .name("cats")
-                        .build()))
-                .status("available")
-                .build();
-        Response<Pet> execute = execute(PET_CONTROLLER_RETROFIT.addPet(pet));
+    @Feature("PetController")
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("com.github.valentina810.data.petcontroller.PetControllerTestData#PetControllerTestDataProvider")
+    @DisplayName("Проверка создания питомца:")
+    public void addPetTest(String testName, PetControllerApiRequest request, PetControllerExpectedData expected) {
+        checkResponse(PET_CONTROLLER_RETROFIT.addPet(request.getPet()), expected, request);
+        checkResponse(PET_CONTROLLER_RETROFIT.getPet(request.getPet().getId()), expected, request);
+    }
+
+    private static void checkResponse(Call<Pet> PET_CONTROLLER_RETROFIT, PetControllerExpectedData expected, PetControllerApiRequest request) {
+        Response<Pet> createdPet = execute(PET_CONTROLLER_RETROFIT);
         assertAll(
-                () -> assertEquals(SC_OK, execute.code()),
-                () -> assertEquals(pet, execute.body())
+                () -> assertEquals(expected.getStatusCode(), createdPet.code(), CHECK_RESPONSE_CODE),
+                () -> assertEquals(expected.getPet(), createdPet.body(), CHECK_RESPONSE_BODY)
         );
     }
 }
