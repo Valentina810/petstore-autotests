@@ -2,7 +2,7 @@ package com.github.valentina810.controller;
 
 import com.github.valentina810.base.RetrofitBase;
 import com.github.valentina810.dto.pet.Pet;
-import com.github.valentina810.dto.response.SuccessResponse;
+import com.github.valentina810.dto.response.ErrorResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -34,5 +34,5 @@ public interface PetControllerRetrofit {
     Call<Pet> getPet(@Path("petId") Long petId);
 
     @DELETE("pet/{petId}")
-    Call<SuccessResponse> deletePet(@Path("petId") Long petId);
+    Call<ErrorResponse> deletePet(@Path("petId") Long petId);
 }
