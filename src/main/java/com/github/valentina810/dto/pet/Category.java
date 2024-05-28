@@ -12,4 +12,10 @@ import lombok.ToString;
 public class Category {
     private int id;
     private String name;
+
+    public Category deepCopy() {
+        return Category.builder()
+                .id(this.id)
+                .name(this.name).build();
+    }
 }

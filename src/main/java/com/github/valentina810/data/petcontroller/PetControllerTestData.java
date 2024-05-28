@@ -7,6 +7,7 @@ import com.github.valentina810.dto.response.ErrorResponse;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import static java.util.stream.Stream.of;
@@ -41,12 +42,15 @@ public class PetControllerTestData {
                     .id(1)
                     .name("british")
                     .build());
+    private static final Pet SIMPLE_PET = createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available");
+    private static final Pet UPDATED_PET = createPet(Category.builder().id(7).name("Лучшие собаки").build(), "Шарик",
+            TWO_PHOTO_URLS, TWO_TAGS, "sold");
 
     static Stream<Arguments> addPetDataProvider() {
         return of(
                 arguments("питомец со всеми полями",
-                        createRequest(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available")),
-                        createExpectedData(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))),
+                        createRequest(SIMPLE_PET),
+                        createExpectedData(SIMPLE_PET)),
                 arguments("питомец без категории",
                         createRequest(createPet(null, "Василий", ONE_PHOTO_URL, ONE_TAG, "available")),
                         createExpectedData(createPet(null, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))),
@@ -96,6 +100,45 @@ public class PetControllerTestData {
                                         .message("Pet not found").build()).build()));
     }
 
+    static Stream<Arguments> updatePetDataProvider() {
+        return of(
+                createUpdateArgument("проверка обновления имени", pet -> {
+                    pet.setName("NewName");
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления категории", pet -> {
+                    pet.setCategory(Category.builder()
+                            .id(2)
+                            .name("dog")
+                            .build());
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления URL фото", pet -> {
+                    pet.setPhotoUrls(TWO_PHOTO_URLS);
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления тегов", pet -> {
+                    pet.setTags(TWO_TAGS);
+                    return pet;
+                }),
+                createUpdateArgument("проверка удаления тегов", pet -> {
+                    pet.setTags(List.of());
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления статуса", pet -> {
+                    pet.setStatus("pending");
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления статуса = null", pet ->
+                {
+                    pet.setStatus(null);
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления всех полей", pet -> UPDATED_PET)
+        );
+    }
+
+
     private static Pet createPet(Category category, String name, List<String> photoUrls, List<Tag> tags, String status) {
         return Pet.builder()
                 .id(PET_TEST_ID)
@@ -118,5 +161,19 @@ public class PetControllerTestData {
                 .statusCode(SC_OK)
                 .pet(pet)
                 .build();
+    }
+
+    private static Arguments createUpdateArgument(String testName, UnaryOperator<Pet> updateOperation) {
+        return arguments(testName,
+                UpdatePetApiRequest.builder()
+                        .pet(SIMPLE_PET)
+                        .updatePet((pet) -> {
+                            Pet updatedPet = pet.deepCopy();
+                            return updateOperation.apply(updatedPet);
+                        })
+                        .build(),
+                UpdatePetApiExpected.builder()
+                        .statusCode(SC_OK)
+                        .build());
     }
 }
