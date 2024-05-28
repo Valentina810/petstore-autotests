@@ -14,7 +14,7 @@ import java.util.List;
 @EqualsAndHashCode
 public class Pet {
     @Getter
-    private int id;
+    private Long id;
     private Category category;
     private String name;
     private List<String> photoUrls;

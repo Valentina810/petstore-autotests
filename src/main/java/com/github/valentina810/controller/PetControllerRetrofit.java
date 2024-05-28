@@ -19,7 +19,7 @@ public interface PetControllerRetrofit {
             .createRetrofit("urlPetstore", PetControllerRetrofit.class);
 
     @POST("pet/{petId}/uploadImage")
-    Call<Pet> uploadPetImage(@Path("petId") Integer petId);
+    Call<Pet> uploadPetImage(@Path("petId") Long petId);
 
     @POST("pet")
     Call<Pet> addPet(@Body Pet pet);
@@ -31,8 +31,8 @@ public interface PetControllerRetrofit {
     Call<List<Pet>> findByStatus(@Query("status") String status);
 
     @GET("pet/{petId}")
-    Call<Pet> getPet(@Path("petId") Integer petId);
+    Call<Pet> getPet(@Path("petId") Long petId);
 
     @DELETE("pet/{petId}")
-    Call<SuccessResponse> deletePet(@Path("petId") Integer petId);
+    Call<SuccessResponse> deletePet(@Path("petId") Long petId);
 }

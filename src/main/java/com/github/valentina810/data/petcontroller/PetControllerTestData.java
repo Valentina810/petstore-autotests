@@ -14,205 +14,84 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 
 public class PetControllerTestData {
-    static Stream<Arguments> PetControllerTestDataProvider() {
+
+    private static final Long petTestId = 20L;
+
+    public static final Category category = Category.builder()
+            .id(1)
+            .name("Koшка")
+            .build();
+
+    private static final List<String> onePhotoUrl = List.of("https://javarush.com/prices/my");
+    private static final List<String> twoPhotoUrls = List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/");
+    private static final List<Tag> oneTag = List.of(
+            Tag.builder()
+                    .id(1)
+                    .name("cats")
+                    .build());
+    private static final List<Tag> twoTags = List.of(
+            Tag.builder()
+                    .id(1)
+                    .name("cats")
+                    .build(),
+            Tag.builder()
+                    .id(1)
+                    .name("british")
+                    .build());
+
+    static Stream<Arguments> AddPetDataProvider() {
         return of(
                 arguments("питомец со всеми полями",
-                        PetControllerApiRequest.builder()
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .name("Василий")
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build(),
-                        PetControllerExpectedData
-                                .builder()
-                                .statusCode(SC_OK)
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .name("Василий")
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build()),
+                        createRequest(createPet(category, "Василий", onePhotoUrl, oneTag, "available")),
+                        createExpectedData(createPet(category, "Василий", onePhotoUrl, oneTag, "available"))),
                 arguments("питомец без категории",
-                        PetControllerApiRequest.builder()
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .name("Василий")
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build(),
-                        PetControllerExpectedData
-                                .builder()
-                                .statusCode(SC_OK)
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .name("Василий")
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build()),
+                        createRequest(createPet(null, "Василий", onePhotoUrl, oneTag, "available")),
+                        createExpectedData(createPet(null, "Василий", onePhotoUrl, oneTag, "available"))),
                 arguments("питомец без имени",
-                        PetControllerApiRequest.builder()
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build(),
-                        PetControllerExpectedData
-                                .builder()
-                                .statusCode(SC_OK)
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build()),
+                        createRequest(createPet(category, null, onePhotoUrl, oneTag, "available")),
+                        createExpectedData(createPet(category, null, onePhotoUrl, oneTag, "available"))),
                 arguments("питомец без ссылок на фото",
-                        PetControllerApiRequest.builder()
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .name("Василий")
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build(),
-                        PetControllerExpectedData
-                                .builder()
-                                .statusCode(SC_OK)
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .photoUrls(List.of())
-                                        .name("Василий")
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .status("available")
-                                        .build())
-                                .build()),
+                        createRequest(createPet(category, "Василий", null, oneTag, "available")),
+                        createExpectedData(createPet(category, "Василий", List.of(), oneTag, "available"))),
+                arguments("питомец c несколькими ссылками на фото",
+                        createRequest(createPet(category, "Василий", twoPhotoUrls, oneTag, "available")),
+                        createExpectedData(createPet(category, "Василий", twoPhotoUrls, oneTag, "available"))),
                 arguments("питомец без тэгов",
-                        PetControllerApiRequest.builder()
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .name("Василий")
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .status("available")
-                                        .build())
-                                .build(),
-                        PetControllerExpectedData
-                                .builder()
-                                .statusCode(SC_OK)
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .name("Василий")
-                                        .tags(List.of())
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .status("available")
-                                        .build())
-                                .build()),
+                        createRequest(createPet(category, "Василий", onePhotoUrl, null, "available")),
+                        createExpectedData(createPet(category, "Василий", onePhotoUrl, List.of(), "available"))),
+                arguments("питомец с несколькими тегами",
+                        createRequest(createPet(category, "Василий", onePhotoUrl, twoTags, "available")),
+                        createExpectedData(createPet(category, "Василий", onePhotoUrl, twoTags, "available"))),
                 arguments("питомец без статуса",
-                        PetControllerApiRequest.builder()
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .name("Василий")
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .build())
-                                .build(),
-                        PetControllerExpectedData
-                                .builder()
-                                .statusCode(SC_OK)
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .category(Category.builder()
-                                                .id(1)
-                                                .name("Кошки").build())
-                                        .name("Василий")
-                                        .photoUrls(List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/"))
-                                        .tags(List.of(Tag.builder()
-                                                .id(1)
-                                                .name("cats")
-                                                .build()))
-                                        .build())
-                                .build()),
+                        createRequest(createPet(category, "Василий", onePhotoUrl, oneTag, null)),
+                        createExpectedData(createPet(category, "Василий", onePhotoUrl, oneTag, null))),
                 arguments("питомец только с именем",
-                        PetControllerApiRequest.builder()
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .name("Василий")
-                                        .build())
-                                .build(),
-                        PetControllerExpectedData
-                                .builder()
-                                .statusCode(SC_OK)
-                                .pet(Pet.builder()
-                                        .id(20)
-                                        .name("Василий")
-                                        .photoUrls(List.of())
-                                        .tags(List.of())
-                                        .build())
-                                .build())
+                        createRequest(createPet(null, "Василий", null, null, null)),
+                        createExpectedData(createPet(null, "Василий", List.of(), List.of(), null)))
         );
+    }
+
+    private static Pet createPet(Category category, String name, List<String> photoUrls, List<Tag> tags, String status) {
+        return Pet.builder()
+                .id(petTestId)
+                .category(category)
+                .name(name)
+                .photoUrls(photoUrls)
+                .tags(tags)
+                .status(status)
+                .build();
+    }
+
+    private static PetControllerApiRequest createRequest(Pet pet) {
+        return PetControllerApiRequest.builder()
+                .pet(pet)
+                .build();
+    }
+
+    private static PetControllerExpectedData createExpectedData(Pet pet) {
+        return PetControllerExpectedData.builder()
+                .statusCode(SC_OK)
+                .pet(pet)
+                .build();
     }
 }
