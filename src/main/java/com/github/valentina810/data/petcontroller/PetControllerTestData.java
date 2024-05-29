@@ -7,6 +7,7 @@ import com.github.valentina810.dto.response.ResponseMessage;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -18,6 +19,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 
 public class PetControllerTestData {
+    private static final AtomicLong petIdGenerator = new AtomicLong(System.currentTimeMillis());
 
     private static final Long PET_TEST_ID = 20L;
     private static final Long PET_INCORRECT_TEST_ID = -1L;
@@ -44,14 +46,12 @@ public class PetControllerTestData {
                     .name("british")
                     .build());
     private static final Pet SIMPLE_PET = createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available");
-    private static final Pet UPDATED_PET = createPet(Category.builder().id(7).name("Лучшие собаки").build(), "Шарик",
-            TWO_PHOTO_URLS, TWO_TAGS, "sold");
 
     static Stream<Arguments> addPetDataProvider() {
         return of(
                 arguments("питомец со всеми полями",
-                        createRequest(SIMPLE_PET),
-                        createExpectedData(SIMPLE_PET)),
+                        createRequest(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available")),
+                        createExpectedData(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))),
                 arguments("питомец без категории",
                         createRequest(createPet(null, "Василий", ONE_PHOTO_URL, ONE_TAG, "available")),
                         createExpectedData(createPet(null, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))),
@@ -82,13 +82,13 @@ public class PetControllerTestData {
     static Stream<Arguments> getPetPositiveDataProvider() {
         return of(
                 arguments("питомец с указанным id существует",
-                        createRequest(SIMPLE_PET),
-                        createExpectedData(SIMPLE_PET)));
+                        createRequest(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available")),
+                        createExpectedData(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))));
     }
 
     private static Pet createPet(Category category, String name, List<String> photoUrls, List<Tag> tags, String status) {
         return Pet.builder()
-                .id(PET_TEST_ID)
+                .id(petIdGenerator.getAndIncrement())
                 .category(category)
                 .name(name)
                 .photoUrls(photoUrls)
@@ -161,14 +161,20 @@ public class PetControllerTestData {
                     pet.setStatus(null);
                     return pet;
                 }),
-                createUpdateArgument("проверка обновления всех полей", pet -> UPDATED_PET)
+                createUpdateArgument("проверка обновления всех полей", pet ->
+                {
+                    Pet newPet = createPet(Category.builder().id(7).name("Лучшие собаки").build(), "Шарик",
+                            TWO_PHOTO_URLS, TWO_TAGS, "sold");
+                    newPet.setId(pet.getId());
+                    return newPet;
+                })
         );
     }
 
     private static Arguments createUpdateArgument(String testName, UnaryOperator<Pet> updateOperation) {
         return arguments(testName,
                 UpdatePetApiRequest.builder()
-                        .pet(SIMPLE_PET)
+                        .pet(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))
                         .updatePet((pet) -> {
                             Pet updatedPet = pet.deepCopy();
                             return updateOperation.apply(updatedPet);
