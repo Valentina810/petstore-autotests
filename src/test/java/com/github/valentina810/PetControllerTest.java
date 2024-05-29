@@ -2,12 +2,15 @@ package com.github.valentina810;
 
 import com.github.valentina810.data.petcontroller.AddPetApiRequest;
 import com.github.valentina810.data.petcontroller.AddPetExpected;
+import com.github.valentina810.data.petcontroller.DeletePetApiExpected;
+import com.github.valentina810.data.petcontroller.DeletePetApiRequest;
 import com.github.valentina810.data.petcontroller.GetPetApiExpected;
 import com.github.valentina810.data.petcontroller.GetPetApiRequest;
 import com.github.valentina810.data.petcontroller.UpdatePetApiExpected;
 import com.github.valentina810.data.petcontroller.UpdatePetApiRequest;
 import com.github.valentina810.dto.pet.Pet;
-import com.github.valentina810.dto.response.ErrorResponseParser;
+import com.github.valentina810.dto.response.ResponseMessage;
+import com.github.valentina810.dto.response.ResponseMessageParser;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Story;
 import org.junit.jupiter.api.DisplayName;
@@ -67,7 +70,7 @@ public class PetControllerTest {
         Response<Pet> response = execute(PET_CONTROLLER_RETROFIT.getPet(request.getIdPet()));
         assertAll(
                 () -> assertEquals(expected.getStatusCode(), response.code(), CHECK_RESPONSE_CODE),
-                () -> assertEquals(expected.getErrorResponse(), ErrorResponseParser.parseErrorResponse(response), CHECK_RESPONSE_BODY)
+                () -> assertEquals(expected.getResponseMessage(), ResponseMessageParser.parseErrorResponse(response), CHECK_RESPONSE_BODY)
         );
     }
 
@@ -93,6 +96,30 @@ public class PetControllerTest {
         );
 
         execute(PET_CONTROLLER_RETROFIT.deletePet(request.getPet().getId()));
+    }
+
+    @Feature("PetController")
+    @Story("DeletePet")
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("com.github.valentina810.data.petcontroller.PetControllerTestData#deletePetPositiveDataProvider")
+    @DisplayName("Проверка удаления питомца:")
+    public void deletePetPositiveTest(String testName, DeletePetApiRequest request, DeletePetApiExpected expected) {
+        execute(PET_CONTROLLER_RETROFIT.addPet(request.getPet()));
+
+        Response<ResponseMessage> response = execute(PET_CONTROLLER_RETROFIT.deletePet(request.getPet().getId()));
+        assertAll(
+                () -> assertEquals(expected.getStatusCode(), response.code(), CHECK_RESPONSE_CODE),
+                () -> assertEquals(expected.getResponseMessage(), response.body(), CHECK_RESPONSE_BODY)
+        );
+    }
+
+    @Feature("PetController")
+    @Story("DeletePet")
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("com.github.valentina810.data.petcontroller.PetControllerTestData#deletePetNegativeDataProvider")
+    @DisplayName("Проверка удаления питомца:")
+    public void deletePetNegativeTest(String testName, DeletePetApiRequest request, DeletePetApiExpected expected) {
+        assertEquals(expected.getStatusCode(), execute(PET_CONTROLLER_RETROFIT.deletePet(request.getIdPet())).code(), CHECK_RESPONSE_CODE);
     }
 }
 

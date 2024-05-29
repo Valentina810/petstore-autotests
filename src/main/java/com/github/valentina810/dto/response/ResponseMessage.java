@@ -8,7 +8,7 @@ import lombok.ToString;
 @ToString
 @Builder
 @EqualsAndHashCode
-public class ErrorResponse {
+public class ResponseMessage {
     @Getter
     private int code;
     private String type;

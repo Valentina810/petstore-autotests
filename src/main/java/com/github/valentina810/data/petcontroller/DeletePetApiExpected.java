@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class GetPetApiExpected {
+public class DeletePetApiExpected {
     private int statusCode;
     private ResponseMessage responseMessage;
 }

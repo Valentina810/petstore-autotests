@@ -10,19 +10,19 @@ import java.io.IOException;
 
 @Slf4j
 @UtilityClass
-public class ErrorResponseParser {
+public class ResponseMessageParser {
 
-    private final ErrorResponse emptyErrorResponse = ErrorResponse.builder().build();
+    private final ResponseMessage EMPTY_RESPONSE_MESSAGE = ResponseMessage.builder().build();
 
-    public static ErrorResponse parseErrorResponse(Response<?> response) {
+    public static ResponseMessage parseErrorResponse(Response<?> response) {
         if (response.errorBody() == null) {
-            return emptyErrorResponse;
+            return EMPTY_RESPONSE_MESSAGE;
         }
         try {
-            return new Gson().fromJson(response.errorBody().string(), ErrorResponse.class);
+            return new Gson().fromJson(response.errorBody().string(), ResponseMessage.class);
         } catch (IOException | JsonSyntaxException e) {
             log.warn(e.getMessage());
-            return emptyErrorResponse;
+            return EMPTY_RESPONSE_MESSAGE;
         }
     }
 }

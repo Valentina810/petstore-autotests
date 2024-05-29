@@ -53,7 +53,8 @@ public class CurlLoggingInterceptor implements Interceptor {
         attach(AttachProperties.builder()
                 .attach(curlCmd)
                 .stepName("Отправить запрос")
-                .attachName("CURL Command").build());
+                .attachName("CURL Command")
+                .build());
     }
 
     public static void attach(AttachProperties attachment) {

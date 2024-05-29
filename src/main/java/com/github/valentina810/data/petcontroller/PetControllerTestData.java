@@ -3,13 +3,14 @@ package com.github.valentina810.data.petcontroller;
 import com.github.valentina810.dto.pet.Category;
 import com.github.valentina810.dto.pet.Pet;
 import com.github.valentina810.dto.pet.Tag;
-import com.github.valentina810.dto.response.ErrorResponse;
+import com.github.valentina810.dto.response.ResponseMessage;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static java.lang.String.valueOf;
 import static java.util.stream.Stream.of;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -81,8 +82,32 @@ public class PetControllerTestData {
     static Stream<Arguments> getPetPositiveDataProvider() {
         return of(
                 arguments("питомец с указанным id существует",
-                        createRequest(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available")),
-                        createExpectedData(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))));
+                        createRequest(SIMPLE_PET),
+                        createExpectedData(SIMPLE_PET)));
+    }
+
+    private static Pet createPet(Category category, String name, List<String> photoUrls, List<Tag> tags, String status) {
+        return Pet.builder()
+                .id(PET_TEST_ID)
+                .category(category)
+                .name(name)
+                .photoUrls(photoUrls)
+                .tags(tags)
+                .status(status)
+                .build();
+    }
+
+    private static AddPetApiRequest createRequest(Pet pet) {
+        return AddPetApiRequest.builder()
+                .pet(pet)
+                .build();
+    }
+
+    private static AddPetExpected createExpectedData(Pet pet) {
+        return AddPetExpected.builder()
+                .statusCode(SC_OK)
+                .pet(pet)
+                .build();
     }
 
     static Stream<Arguments> getPetNegativeDataProvider() {
@@ -94,10 +119,12 @@ public class PetControllerTestData {
                                 .build(),
                         GetPetApiExpected.builder()
                                 .statusCode(SC_NOT_FOUND)
-                                .errorResponse(ErrorResponse.builder()
+                                .responseMessage(ResponseMessage.builder()
                                         .code(1)
                                         .type("error")
-                                        .message("Pet not found").build()).build()));
+                                        .message("Pet not found")
+                                        .build())
+                                .build()));
     }
 
     static Stream<Arguments> updatePetDataProvider() {
@@ -138,31 +165,6 @@ public class PetControllerTestData {
         );
     }
 
-
-    private static Pet createPet(Category category, String name, List<String> photoUrls, List<Tag> tags, String status) {
-        return Pet.builder()
-                .id(PET_TEST_ID)
-                .category(category)
-                .name(name)
-                .photoUrls(photoUrls)
-                .tags(tags)
-                .status(status)
-                .build();
-    }
-
-    private static AddPetApiRequest createRequest(Pet pet) {
-        return AddPetApiRequest.builder()
-                .pet(pet)
-                .build();
-    }
-
-    private static AddPetExpected createExpectedData(Pet pet) {
-        return AddPetExpected.builder()
-                .statusCode(SC_OK)
-                .pet(pet)
-                .build();
-    }
-
     private static Arguments createUpdateArgument(String testName, UnaryOperator<Pet> updateOperation) {
         return arguments(testName,
                 UpdatePetApiRequest.builder()
@@ -175,5 +177,30 @@ public class PetControllerTestData {
                 UpdatePetApiExpected.builder()
                         .statusCode(SC_OK)
                         .build());
+    }
+
+    static Stream<Arguments> deletePetPositiveDataProvider() {
+        return of(
+                arguments("питомец с указанным id существует",
+                        DeletePetApiRequest.builder()
+                                .pet(SIMPLE_PET).build(),
+                        DeletePetApiExpected.builder()
+                                .statusCode(SC_OK)
+                                .responseMessage(ResponseMessage.builder()
+                                        .code(SC_OK)
+                                        .type("unknown")
+                                        .message(valueOf(PET_TEST_ID))
+                                        .build())
+                                .build()));
+    }
+
+    static Stream<Arguments> deletePetNegativeDataProvider() {
+        return of(
+                arguments("питомец с указанным id не существует",
+                        DeletePetApiRequest.builder()
+                                .idPet(PET_INCORRECT_TEST_ID).build(),
+                        DeletePetApiExpected.builder()
+                                .statusCode(SC_NOT_FOUND)
+                                .build()));
     }
 }
