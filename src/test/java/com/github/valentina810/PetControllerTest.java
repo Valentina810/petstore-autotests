@@ -36,6 +36,7 @@ public class PetControllerTest {
     @MethodSource("com.github.valentina810.data.petcontroller.PetControllerTestData#addPetDataProvider")
     @DisplayName("Проверка создания питомца:")
     public void addPetTest(String testName, AddPetApiRequest request, AddPetExpected expected) {
+        expected.getPet().setId(request.getPet().getId());
         checkResponse(execute(PET_CONTROLLER_RETROFIT.addPet(request.getPet())), expected);
         checkResponse(execute(PET_CONTROLLER_RETROFIT.getPet(request.getPet().getId())), expected);
 
@@ -55,6 +56,7 @@ public class PetControllerTest {
     @MethodSource("com.github.valentina810.data.petcontroller.PetControllerTestData#getPetPositiveDataProvider")
     @DisplayName("Проверка получения данных о питомце:")
     public void getPetPositiveTest(String testName, AddPetApiRequest request, AddPetExpected expected) {
+        expected.getPet().setId(request.getPet().getId());
         checkResponse(execute(PET_CONTROLLER_RETROFIT.addPet(request.getPet())), expected);
         checkResponse(execute(PET_CONTROLLER_RETROFIT.getPet(request.getPet().getId())), expected);
 
@@ -104,6 +106,7 @@ public class PetControllerTest {
     @MethodSource("com.github.valentina810.data.petcontroller.PetControllerTestData#deletePetPositiveDataProvider")
     @DisplayName("Проверка удаления питомца:")
     public void deletePetPositiveTest(String testName, DeletePetApiRequest request, DeletePetApiExpected expected) {
+        expected.getResponseMessage().setMessage(String.valueOf(request.getPet().getId()));
         execute(PET_CONTROLLER_RETROFIT.addPet(request.getPet()));
 
         Response<ResponseMessage> response = execute(PET_CONTROLLER_RETROFIT.deletePet(request.getPet().getId()));
