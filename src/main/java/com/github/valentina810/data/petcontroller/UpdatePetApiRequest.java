@@ -3,12 +3,12 @@ package com.github.valentina810.data.petcontroller;
 import com.github.valentina810.dto.pet.Pet;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
+
+import java.util.function.UnaryOperator;
 
 @Builder
 @Getter
-@ToString
-public class PetControllerExpectedData {
-    public int statusCode;
+public class UpdatePetApiRequest {
     private Pet pet;
+    private UnaryOperator<Pet> updatePet;
 }

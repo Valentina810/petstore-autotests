@@ -8,7 +8,7 @@ import lombok.ToString;
 @Builder
 @Getter
 @ToString
-public class PetControllerApiRequest {
-    private String testName;
+public class AddPetExpected {
+    private int statusCode;
     private Pet pet;
 }

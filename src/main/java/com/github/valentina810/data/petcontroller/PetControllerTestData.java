@@ -3,33 +3,38 @@ package com.github.valentina810.data.petcontroller;
 import com.github.valentina810.dto.pet.Category;
 import com.github.valentina810.dto.pet.Pet;
 import com.github.valentina810.dto.pet.Tag;
+import com.github.valentina810.dto.response.ResponseMessage;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static java.lang.String.valueOf;
 import static java.util.stream.Stream.of;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 
 public class PetControllerTestData {
 
-    private static final Long petTestId = 20L;
+    private static final Long PET_TEST_ID = 20L;
+    private static final Long PET_INCORRECT_TEST_ID = -1L;
 
-    public static final Category category = Category.builder()
+    public static final Category CATEGORY = Category.builder()
             .id(1)
             .name("Koшка")
             .build();
 
-    private static final List<String> onePhotoUrl = List.of("https://javarush.com/prices/my");
-    private static final List<String> twoPhotoUrls = List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/");
-    private static final List<Tag> oneTag = List.of(
+    private static final List<String> ONE_PHOTO_URL = List.of("https://javarush.com/prices/my");
+    private static final List<String> TWO_PHOTO_URLS = List.of("https://javarush.com/prices/my", "https://skill-debugger.marusia.mail.ru/");
+    private static final List<Tag> ONE_TAG = List.of(
             Tag.builder()
                     .id(1)
                     .name("cats")
                     .build());
-    private static final List<Tag> twoTags = List.of(
+    private static final List<Tag> TWO_TAGS = List.of(
             Tag.builder()
                     .id(1)
                     .name("cats")
@@ -38,42 +43,52 @@ public class PetControllerTestData {
                     .id(1)
                     .name("british")
                     .build());
+    private static final Pet SIMPLE_PET = createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, "available");
+    private static final Pet UPDATED_PET = createPet(Category.builder().id(7).name("Лучшие собаки").build(), "Шарик",
+            TWO_PHOTO_URLS, TWO_TAGS, "sold");
 
-    static Stream<Arguments> AddPetDataProvider() {
+    static Stream<Arguments> addPetDataProvider() {
         return of(
                 arguments("питомец со всеми полями",
-                        createRequest(createPet(category, "Василий", onePhotoUrl, oneTag, "available")),
-                        createExpectedData(createPet(category, "Василий", onePhotoUrl, oneTag, "available"))),
+                        createRequest(SIMPLE_PET),
+                        createExpectedData(SIMPLE_PET)),
                 arguments("питомец без категории",
-                        createRequest(createPet(null, "Василий", onePhotoUrl, oneTag, "available")),
-                        createExpectedData(createPet(null, "Василий", onePhotoUrl, oneTag, "available"))),
+                        createRequest(createPet(null, "Василий", ONE_PHOTO_URL, ONE_TAG, "available")),
+                        createExpectedData(createPet(null, "Василий", ONE_PHOTO_URL, ONE_TAG, "available"))),
                 arguments("питомец без имени",
-                        createRequest(createPet(category, null, onePhotoUrl, oneTag, "available")),
-                        createExpectedData(createPet(category, null, onePhotoUrl, oneTag, "available"))),
+                        createRequest(createPet(CATEGORY, null, ONE_PHOTO_URL, ONE_TAG, "available")),
+                        createExpectedData(createPet(CATEGORY, null, ONE_PHOTO_URL, ONE_TAG, "available"))),
                 arguments("питомец без ссылок на фото",
-                        createRequest(createPet(category, "Василий", null, oneTag, "available")),
-                        createExpectedData(createPet(category, "Василий", List.of(), oneTag, "available"))),
+                        createRequest(createPet(CATEGORY, "Василий", null, ONE_TAG, "available")),
+                        createExpectedData(createPet(CATEGORY, "Василий", List.of(), ONE_TAG, "available"))),
                 arguments("питомец c несколькими ссылками на фото",
-                        createRequest(createPet(category, "Василий", twoPhotoUrls, oneTag, "available")),
-                        createExpectedData(createPet(category, "Василий", twoPhotoUrls, oneTag, "available"))),
+                        createRequest(createPet(CATEGORY, "Василий", TWO_PHOTO_URLS, ONE_TAG, "available")),
+                        createExpectedData(createPet(CATEGORY, "Василий", TWO_PHOTO_URLS, ONE_TAG, "available"))),
                 arguments("питомец без тэгов",
-                        createRequest(createPet(category, "Василий", onePhotoUrl, null, "available")),
-                        createExpectedData(createPet(category, "Василий", onePhotoUrl, List.of(), "available"))),
+                        createRequest(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, null, "available")),
+                        createExpectedData(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, List.of(), "available"))),
                 arguments("питомец с несколькими тегами",
-                        createRequest(createPet(category, "Василий", onePhotoUrl, twoTags, "available")),
-                        createExpectedData(createPet(category, "Василий", onePhotoUrl, twoTags, "available"))),
+                        createRequest(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, TWO_TAGS, "available")),
+                        createExpectedData(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, TWO_TAGS, "available"))),
                 arguments("питомец без статуса",
-                        createRequest(createPet(category, "Василий", onePhotoUrl, oneTag, null)),
-                        createExpectedData(createPet(category, "Василий", onePhotoUrl, oneTag, null))),
+                        createRequest(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, null)),
+                        createExpectedData(createPet(CATEGORY, "Василий", ONE_PHOTO_URL, ONE_TAG, null))),
                 arguments("питомец только с именем",
                         createRequest(createPet(null, "Василий", null, null, null)),
                         createExpectedData(createPet(null, "Василий", List.of(), List.of(), null)))
         );
     }
 
+    static Stream<Arguments> getPetPositiveDataProvider() {
+        return of(
+                arguments("питомец с указанным id существует",
+                        createRequest(SIMPLE_PET),
+                        createExpectedData(SIMPLE_PET)));
+    }
+
     private static Pet createPet(Category category, String name, List<String> photoUrls, List<Tag> tags, String status) {
         return Pet.builder()
-                .id(petTestId)
+                .id(PET_TEST_ID)
                 .category(category)
                 .name(name)
                 .photoUrls(photoUrls)
@@ -82,16 +97,110 @@ public class PetControllerTestData {
                 .build();
     }
 
-    private static PetControllerApiRequest createRequest(Pet pet) {
-        return PetControllerApiRequest.builder()
+    private static AddPetApiRequest createRequest(Pet pet) {
+        return AddPetApiRequest.builder()
                 .pet(pet)
                 .build();
     }
 
-    private static PetControllerExpectedData createExpectedData(Pet pet) {
-        return PetControllerExpectedData.builder()
+    private static AddPetExpected createExpectedData(Pet pet) {
+        return AddPetExpected.builder()
                 .statusCode(SC_OK)
                 .pet(pet)
                 .build();
+    }
+
+    static Stream<Arguments> getPetNegativeDataProvider() {
+
+        return of(
+                arguments("питомец указанным id не существует",
+                        GetPetApiRequest.builder()
+                                .idPet(PET_INCORRECT_TEST_ID)
+                                .build(),
+                        GetPetApiExpected.builder()
+                                .statusCode(SC_NOT_FOUND)
+                                .responseMessage(ResponseMessage.builder()
+                                        .code(1)
+                                        .type("error")
+                                        .message("Pet not found")
+                                        .build())
+                                .build()));
+    }
+
+    static Stream<Arguments> updatePetDataProvider() {
+        return of(
+                createUpdateArgument("проверка обновления имени", pet -> {
+                    pet.setName("NewName");
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления категории", pet -> {
+                    pet.setCategory(Category.builder()
+                            .id(2)
+                            .name("dog")
+                            .build());
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления URL фото", pet -> {
+                    pet.setPhotoUrls(TWO_PHOTO_URLS);
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления тегов", pet -> {
+                    pet.setTags(TWO_TAGS);
+                    return pet;
+                }),
+                createUpdateArgument("проверка удаления тегов", pet -> {
+                    pet.setTags(List.of());
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления статуса", pet -> {
+                    pet.setStatus("pending");
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления статуса = null", pet ->
+                {
+                    pet.setStatus(null);
+                    return pet;
+                }),
+                createUpdateArgument("проверка обновления всех полей", pet -> UPDATED_PET)
+        );
+    }
+
+    private static Arguments createUpdateArgument(String testName, UnaryOperator<Pet> updateOperation) {
+        return arguments(testName,
+                UpdatePetApiRequest.builder()
+                        .pet(SIMPLE_PET)
+                        .updatePet((pet) -> {
+                            Pet updatedPet = pet.deepCopy();
+                            return updateOperation.apply(updatedPet);
+                        })
+                        .build(),
+                UpdatePetApiExpected.builder()
+                        .statusCode(SC_OK)
+                        .build());
+    }
+
+    static Stream<Arguments> deletePetPositiveDataProvider() {
+        return of(
+                arguments("питомец с указанным id существует",
+                        DeletePetApiRequest.builder()
+                                .pet(SIMPLE_PET).build(),
+                        DeletePetApiExpected.builder()
+                                .statusCode(SC_OK)
+                                .responseMessage(ResponseMessage.builder()
+                                        .code(SC_OK)
+                                        .type("unknown")
+                                        .message(valueOf(PET_TEST_ID))
+                                        .build())
+                                .build()));
+    }
+
+    static Stream<Arguments> deletePetNegativeDataProvider() {
+        return of(
+                arguments("питомец с указанным id не существует",
+                        DeletePetApiRequest.builder()
+                                .idPet(PET_INCORRECT_TEST_ID).build(),
+                        DeletePetApiExpected.builder()
+                                .statusCode(SC_NOT_FOUND)
+                                .build()));
     }
 }
